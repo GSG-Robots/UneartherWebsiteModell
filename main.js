@@ -14,6 +14,7 @@ const btnX_minus = document.getElementById("moveXneg");
 
 const btn_bohrer = document.getElementById("drill");
 const btn_heimat = document.getElementById("home");
+const btn_bewegung = document.getElementById("movePosition");
 
 const coord_display_1 = document.getElementById("coords");
 const coord_display_2 = document.getElementById("coords2");
@@ -71,6 +72,7 @@ let z_coord = 0;
 
 let bohrer_active = false;
 
+let is_moving = false;
 const frameStep = 1 / 30;
 // Loader
 const loader = new GLTFLoader();
@@ -186,28 +188,28 @@ function animate() {
 }
 
 // Buttons
-btnY_plus.onclick = () => {
-    if (!mixer_y) return;
+btnY_plus.onclick = async function() {
+    if (!mixer_y || is_moving) return;
 
-    move_to(x_coord, min(y_coord + 10, Y_MAX));
+    await move_to(x_coord, min(y_coord + 10, Y_MAX));
 };
 
-btnY_minus.onclick = () => {
-    if (!mixer_y) return;
+btnY_minus.onclick = async function() {
+    if (!mixer_y || is_moving) return;
 
-    move_to(x_coord, max(y_coord - 10, 0));
+    await move_to(x_coord, max(y_coord - 10, 0));
 };
 
-btnX_plus.onclick = () => {
-    if (!mixer_x) return;
+btnX_plus.onclick = async function() {
+    if (!mixer_x || is_moving) return;
 
-    move_to(min(x_coord + 10, X_MAX), y_coord);
+    await move_to(min(x_coord + 10, X_MAX), y_coord);
 };
 
-btnX_minus.onclick = () => {
-    if (!mixer_x) return;
+btnX_minus.onclick = async function() {
+    if (!mixer_x || is_moving) return;
 
-    move_to(max(x_coord - 10, 0), y_coord);
+    await move_to(max(x_coord - 10, 0), y_coord);
 };
 
 
@@ -221,10 +223,43 @@ btn_bohrer.onclick = () => {
     bohrer_active = !bohrer_active;
 }
 
-btn_heimat.onclick = () => {
-    move_to(0, 0);
+btn_heimat.onclick = async function() {
+    await move_to(0, 0);
 }
 
+btn_bewegung.onclick = async function() {
+    let input_x = Number(prompt("move X (0-100)"));
+
+    input_x = max(0, min(input_x, X_MAX));
+
+    if (isNaN(input_x)) {
+        alert("That's no number!");
+        return;
+    }
+
+    let input_y = Number(prompt("move  (0-100)"));
+
+    input_y = max(0, min(input_y, Y_MAX));
+
+
+    if (isNaN(input_y)) {
+        alert("That's no number!");
+        return;
+    }
+
+    // let input_z = prompt("move X (0-100)");
+
+    // input_z = min(0, max(input_z, Z_MAX));
+
+
+    // if (!isNaN(input_z)) {
+    //     alert("That's no number!");
+    // }
+
+    await move_to(input_x, input_y);
+
+    
+}
 function update_coords() {
     coord_display_1.innerText = x_coord + " " + y_coord + " " + z_coord;
     coord_display_2.innerText = x_coord + " " + y_coord + " " + z_coord;
@@ -276,17 +311,40 @@ async function move_y(steps, delay) {
 }
 
 async function move_to(x, y) {
-    let dx = x - x_coord;
-    let dy = y - y_coord;
+    while (is_moving);
+    is_moving = true;
+    let dx = abs(x - x_coord);
+    let dy = abs(y - y_coord);
 
-    let steps = max(abs(dx), abs(dy));
-    console.log(dx, dy, x_coord, y_coord, steps
-    )
+    let sx = x_coord < x ? 1 : -1;
+    let sy = y_coord < y ? 1 : -1;
 
-    for (let i = 0; i < steps; i++) {
-        await move_x(dx / steps, 25);
-        await move_y(dy / steps, 25);
+    let err = dx - dy;
+
+    console.log(dx, dy, x_coord, y_coord)
+
+    while (true) {
+        if (x_coord == x && y_coord == y) break;
+        console.log(x_coord, y_coord);
+
+        let e2 = 2 * err;
+
+        if (e2 > -dy)  {
+            err -= dy;
+            // x_coord += sx;
+            await move_x(sx, 25);
+            console.log("move_x: ", sx);
+        }
+        
+        if (e2 < dx) {
+            err += dx
+            // y_coord += sy
+            await move_y(sy, 25);
+            console.log("move_y: ", sy);
+        }
     }
+
+    is_moving = false;
 }
 
 animate();
