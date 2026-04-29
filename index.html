@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unearther</title>
+    <link rel="icon" href="/favicon.png" />
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div id="content">
+        <nav>
+            <a class="menu-item" href="/">
+                <img src="/icons/home.svg" /> <span>Dashboard</span>
+            </a>
+            <a class="menu-item" href="/live">
+                <img src="/icons/video.svg" /> <span>Live</span>
+            </a>
+            <a class="menu-item" href="/history">
+                <img src="/icons/layers.svg" /> <span>Verlauf</span>
+            </a>
+            <a class="menu-item" href="/settings">
+                <img src="/icons/sliders.svg" /> <span>Einstellungen</span>
+            </a>
+        </nav>
+        <div id="page" role="presentation">
+            <header>
+                <button id="menu-button" class="menu-item">
+                    <img src="/icons/menu.svg" />
+                    <span>Einklappen</span>
+                </button>
+                <h1>Unearther</h1>
+            </header>
+            <div id="main-content" role="presentation">
+                <main>
+                    <section title="Live Stream" id="main">
+                        <canvas id="canvas"></canvas>
+                    </section>
+                    <section title="Control" id="side">
+                        <div class="column">
+                            <div id="manualMode" only-when="manual mode">
+                                <button class="button" id="switchToAuto">
+                                    Zur automatischen Steuerung wechseln
+                                </button>
+                                <br>
+                                <br>
+                                <div class="row" style="width:100%">
+                                    <span class="flex-grow row" id="coords">? ? ?</span>
+                                    <button class="button row" id="movePosition"
+                                        should-be-disabled="{!globalState.motorController.isIdle}">
+                                        <img src="/icons/edit-2.svg" />
+                                    </button>
+                                    <button id="home" class="button"
+                                        should-be-disabled="{!globalState.motorController.isIdle}">
+                                        <img src="/icons/home.svg" />
+                                    </button>
+                                    <button id="drill" class="button">
+                                        <img src="/icons/fan.svg" />
+                                    </button>
+                                </div>
+                                <div class="movement-controls row">
+                                    <div class="column">
+                                        <button class="button" id="moveZneg"
+                                            should-be-disabled="{!globalState.motorController.isIdle}">
+                                            <img src="/icons/arrow-up.svg" />
+                                        </button>
+                                        <button class="button" id="moveZpos"
+                                            should-be-disabled="{!globalState.motorController.isIdle}">
+                                            <img src="/icons/arrow-down.svg" />
+                                        </button>
+                                    </div>
+                                    <div class="movement-arrows">
+                                        <button id="moveXneg" class="button diagonal"
+                                            should-be-disabled="{!globalState.motorController.isIdle}">
+                                            <img src="/icons/arrow-left.svg" />
+                                        </button>
+                                        <button id="moveXpos" class="button diagonal"
+                                            should-be-disabled="{!globalState.motorController.isIdle}">
+                                            <img src="/icons/arrow-right.svg" />
+                                        </button>
+                                        <button id="moveYpos" class="button diagonal"
+                                            should-be-disabled="{!globalState.motorController.isIdle}">
+                                            <img src="/icons/arrow-up.svg" />
+                                        </button>
+                                        <button id="moveYneg" class="button diagonal"
+                                            should-be-disabled="{!globalState.motorController.isIdle}">
+                                            <img src="/icons/arrow-down.svg" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="autoMode" only-when="automode">
+                                <button class="button" id="switchToManual"
+                                    should-be-disabled="{!globalState.digger.isPaused}">
+                                    Zur manuellen Steuerung wechseln
+                                </button>
+
+                                <span>
+                                    Layer: ?
+                                    <!-- (Idle)
+                                    (Done)
+                                    (Paused)
+                                    (In Progress) -->
+                                </span>
+                                <span>
+                                    <button class="button" id="startAutoDig"
+                                        only-when="globalState.digger.isFinished || globalState.digger.isNotStarted || globalState.digger.isPaused">
+                                        <img src="/icons/play.svg" />
+                                    </button>
+                                    <button class="button" id="pauseAutoDig" only-when="running">
+                                        <img src="/icons/pause.svg" />
+                                    </button>
+                                    <button class="button" id="stopAutoDig"
+                                        should-be-disabled="{globalState.digger.isFinished || globalState.digger.isNotStarted}">
+                                        <img src="/icons/square.svg" />
+                                    </button>
+                                </span>
+
+                                <div class="row" id="coords2">? ? ?</div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+    </div>
+
+
+    <style>
+        main {
+            height: 100%;
+
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        #main {
+            width: 60%;
+            height: 100%;
+            width: auto;
+            aspect-ratio: 1;
+        }
+
+        #side {
+            flex: 1 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        @media (width <=900px) {
+            main {
+                flex-direction: column;
+            }
+
+            #main {
+                width: 100%;
+                max-height: 70%;
+            }
+        }
+    </style>
+
+    <style>
+        #content {
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+            align-items: stretch;
+            height: 100dvh;
+            width: 100dvw;
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px 10px;
+
+            background-color: var(--theme);
+        }
+
+        .menu-item {
+            all: unset;
+            background-color: var(--theme);
+            padding: 10px;
+
+            --fi-size: 1.5em;
+            --fi-isize: 1.4em;
+
+            cursor: pointer;
+            border-radius: 5px;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            align-items: center;
+            gap: 10px;
+
+            &>span {
+                display: none;
+                font-size: 1.1em;
+                font-weight: 600;
+
+                .expanded & {
+                    display: block;
+                }
+            }
+
+            &:hover {
+                background-color: color-mix(in srgb, var(--theme), var(--back) 10%);
+            }
+
+            &.selected {
+                background-color: color-mix(in srgb, var(--theme), var(--back) 30%);
+            }
+        }
+
+        #page {
+            width: 0;
+            height: 100%;
+            flex: 1 1 0;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: stretch;
+            background-color: var(--theme);
+        }
+
+        #main-content {
+            justify-self: stretch;
+            align-self: stretch;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+            align-items: stretch;
+            background-color: var(--back);
+            border-top-left-radius: 10px;
+            padding: 10px;
+        }
+
+        header {
+            flex: 0 0;
+            display: flex;
+            height: fit-content;
+            background-color: var(--theme);
+            flex-direction: row;
+            justify-content: stretch;
+            align-items: center;
+            grid-area: header;
+            padding: 15px 10px;
+            gap: 20px;
+
+            &>h1 {
+                all: unset;
+                font-size: 1.5em;
+                font-weight: bold;
+                flex: 1 1;
+            }
+        }
+
+        nav,
+        header {
+            --fore: var(--theme-fore);
+            color: var(--theme-fore);
+        }
+
+        #menu-button {
+            display: none;
+        }
+
+        @media (width <=550px) {
+            #menu-extend-button {
+                display: none;
+            }
+
+            nav {
+                position: absolute;
+                translate: -110%;
+                height: 100dvh;
+                transition: translate 150ms;
+                padding-top: 2.5em;
+                min-width: 80dvw;
+                gap: 0.5em;
+                box-shadow: 0 0 5px 5px color-mix(in srgb, var(--theme), var(--back) 30%);
+
+                &.expanded {
+                    translate: 0;
+                }
+            }
+
+            .menu-item {
+                background-color: color-mix(in srgb, var(--theme), var(--back) 10%);
+
+                &:not(#menu-button) {
+                    padding: 0.7em;
+                }
+
+                nav &>span {
+                    display: block;
+                }
+            }
+
+            #menu-button {
+                display: revert;
+            }
+
+            #main-content {
+                border-top-left-radius: 0;
+            }
+        }
+    </style>
+
+    <style>
+        #livestream {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+            object-fit: contain;
+            rotate: 90deg;
+        }
+
+        .movement-arrows {
+            grid-area: arrows;
+            display: grid;
+            grid-template-areas:
+                ".  aforward ."
+                "aleft . aright"
+                ".  aback .";
+            grid-template-columns: repeat(3, 30px);
+            grid-template-rows: repeat(3, 30px);
+            gap: 10px;
+            justify-items: center;
+            align-items: center;
+            place-items: center;
+            padding: 20px;
+            width: 150px;
+            height: 150px;
+        }
+
+        #moveXneg {
+            grid-area: aleft;
+        }
+
+        #moveXpos {
+            grid-area: aright;
+        }
+
+        #moveYpos {
+            grid-area: aforward;
+        }
+
+        #moveYneg {
+            grid-area: aback;
+        }
+
+        #home {
+            grid-area: home;
+        }
+
+        .diagonal {
+            width: calc(1.5em + 20px);
+            height: calc(1.5em + 20px);
+            padding: 0;
+            rotate: 45deg;
+            display: grid;
+            place-items: center;
+
+            >* {
+                rotate: -45deg;
+            }
+        }
+
+        #autoMode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js"
+            }
+        }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>

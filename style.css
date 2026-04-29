@@ -1,0 +1,141 @@
+:root {
+    --theme: #006d5b;
+    --theme-fore: rgb(220, 220, 220);
+
+    --fore: black;
+    --back: white;
+    --border: #aec8c9;
+    color-scheme: light;
+
+    --orientation: landscape;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fore: rgb(220, 220, 220);
+        --back: rgb(30, 30, 30);
+        --border: #353f40;
+        color-scheme: dark;
+    }
+}
+
+@media (width <=500px) {
+    :root {
+        --orientation: portrait;
+    }
+}
+
+body {
+    color: var(--fore);
+    background-color: var(--back);
+    margin: 0;
+
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 13.5pt;
+
+    height: 100dvh;
+    width: 100dvw;
+
+    transition: rotate 5s;
+
+    &.doabarrelroll {
+        rotate: 360deg;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: color-mix(in srgb, rgb(0, 191, 255), var(--fore) 50%);
+    text-decoration: underline;
+
+    &:hover {
+        text-decoration: underline dashed;
+    }
+}
+
+.button {
+    all: unset;
+    background-color: var(--theme);
+    padding: 10px;
+    color: var(--theme-fore);
+
+    --fi-size: 1.5em;
+    --fi-isize: 1.4em;
+
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+
+    user-select: none;
+
+    &:hover {
+        background-color: color-mix(in srgb, var(--theme), var(--back) 10%);
+    }
+
+    &:disabled {
+        background-color: gray;
+        cursor: not-allowed;
+    }
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.flex-grow {
+    flex-grow: 1;
+    width: 100%;
+}
+
+.warning-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 10px;
+    padding: 10px;
+    border: 2px solid red;
+    border-radius: 5px;
+    animation: warning-border-pulse 3s infinite;
+}
+
+@keyframes warning-border-pulse {
+    0% {
+        border-color: red;
+    }
+
+    50% {
+        border-color: #ff6b6b;
+    }
+
+    100% {
+        border-color: red;
+    }
+}
+
+img[src^="/icons"] {
+    filter: invert(1);
+        display: grid;
+        place-items: center;
+        width: var(--fi-size, 1.2em);
+        height: var(--fi-size, 1.2em);
+        min-width: var(--fi-size, 1.2em);
+        min-height: var(--fi-size, 1.2em);
+        max-width: var(--fi-size, 1.2em);
+        max-height: var(--fi-size, 1.2em);
+}
