@@ -130,12 +130,22 @@ a {
 
 img[src^="/icons"] {
     filter: invert(1);
-        display: grid;
-        place-items: center;
-        width: var(--fi-size, 1.2em);
-        height: var(--fi-size, 1.2em);
-        min-width: var(--fi-size, 1.2em);
-        min-height: var(--fi-size, 1.2em);
-        max-width: var(--fi-size, 1.2em);
-        max-height: var(--fi-size, 1.2em);
+    display: grid;
+    place-items: center;
+    width: var(--fi-size, 1.2em);
+    height: var(--fi-size, 1.2em);
+    min-width: var(--fi-size, 1.2em);
+    min-height: var(--fi-size, 1.2em);
+    max-width: var(--fi-size, 1.2em);
+    max-height: var(--fi-size, 1.2em);
+}
+
+@keyframes rotate {
+    from {
+        rotate: 0turn;
+    }
+
+    to {
+        rotate: 1turn;
+    }
 }

@@ -46,8 +46,8 @@
                                 </button>
                                 <br>
                                 <br>
-                                <div class="row" style="width:100%">
-                                    <span class="flex-grow row" id="coords">? ? ?</span>
+                                <div class="row" style="width:100%; margin-bottom: 0.5em">
+                                    <span class="flex-grow row" id="coords">0 0 0</span>
                                     <button class="button row" id="movePosition"
                                         should-be-disabled="{!globalState.motorController.isIdle}">
                                         <img src="/icons/edit-2.svg" />
@@ -105,20 +105,20 @@
                                     (In Progress) -->
                                 </span>
                                 <span>
-                                    <button class="button" id="startAutoDig"
+                                    <button class="button" id="start"
                                         only-when="globalState.digger.isFinished || globalState.digger.isNotStarted || globalState.digger.isPaused">
                                         <img src="/icons/play.svg" />
                                     </button>
-                                    <button class="button" id="pauseAutoDig" only-when="running">
+                                    <button class="button" id="pause" only-when="running">
                                         <img src="/icons/pause.svg" />
                                     </button>
-                                    <button class="button" id="stopAutoDig"
+                                    <button class="button" id="stop"
                                         should-be-disabled="{globalState.digger.isFinished || globalState.digger.isNotStarted}">
                                         <img src="/icons/square.svg" />
                                     </button>
                                 </span>
 
-                                <div class="row" id="coords2">? ? ?</div>
+                                <div class="row" id="coords2">0 0 0</div>
                             </div>
                         </div>
                     </section>
@@ -142,6 +142,10 @@
             height: 100%;
             width: auto;
             aspect-ratio: 1;
+
+            &>* {
+                border-radius: 5px;
+            }
         }
 
         #side {
@@ -158,6 +162,7 @@
 
             #main {
                 width: 100%;
+                height: auto;
                 max-height: 70%;
             }
         }
@@ -381,6 +386,15 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
+        }
+
+        #drill img {
+            animation: rotate 1s infinite linear;
+            animation-play-state: paused;
+        }
+
+        #drill.rotate img {
+            animation-play-state: running;
         }
     </style>
     <script type="importmap">

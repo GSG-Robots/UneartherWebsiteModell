@@ -19,6 +19,13 @@ const btn_bohrer = document.getElementById("drill");
 const btn_heimat = document.getElementById("home");
 const btn_bewegung = document.getElementById("movePosition");
 
+const btn_start = document.getElementById("start");
+const btn_pause = document.getElementById("pause");
+const btn_stop = document.getElementById("stop");
+
+const btn_toAuto = document.getElementById("switchToAuto");
+const btn_toManu = document.getElementById("switchToManual");
+
 const coord_display_1 = document.getElementById("coords");
 const coord_display_2 = document.getElementById("coords2");
 
@@ -79,6 +86,10 @@ let x_coord = 0;
 let z_coord = 0;
 
 let bohrer_active = false;
+let is_paused = false;
+let is_stopped = true;
+
+let autoMode = true;
 
 let is_moving = false;
 const frameStep = 1 / 30;
@@ -213,7 +224,7 @@ function animate() {
 
 // Buttons
 
-btnZ_plus.onclick = async function() {
+btnZ_plus.onclick = async function () {
     if (!mixer_z || is_moving) return;
 
     console.log(min(z_coord + 10, Z_MAX));
@@ -221,31 +232,31 @@ btnZ_plus.onclick = async function() {
     await move_z(min(z_coord + 10, Z_MAX) - z_coord, 25);
 };
 
-btnZ_minus.onclick = async function() {
+btnZ_minus.onclick = async function () {
     if (!mixer_z || is_moving) return;
 
     await move_z(max(z_coord - 10, 0) - z_coord, 25);
 };
 
-btnY_plus.onclick = async function() {
+btnY_plus.onclick = async function () {
     if (!mixer_y || is_moving) return;
 
     await move_to(x_coord, min(y_coord + 10, Y_MAX));
 };
 
-btnY_minus.onclick = async function() {
+btnY_minus.onclick = async function () {
     if (!mixer_y || is_moving) return;
 
     await move_to(x_coord, max(y_coord - 10, 0));
 };
 
-btnX_plus.onclick = async function() {
+btnX_plus.onclick = async function () {
     if (!mixer_x || is_moving) return;
 
     await move_to(min(x_coord + 10, X_MAX), y_coord);
 };
 
-btnX_minus.onclick = async function() {
+btnX_minus.onclick = async function () {
     if (!mixer_x || is_moving) return;
 
     await move_to(max(x_coord - 10, 0), y_coord);
@@ -262,11 +273,12 @@ btn_bohrer.onclick = () => {
     bohrer_active = !bohrer_active;
 }
 
-btn_heimat.onclick = async function() {
+btn_heimat.onclick = async function () {
     await move_to(0, 0);
+    await move_z(-z_coord, 25);
 }
 
-btn_bewegung.onclick = async function() {
+btn_bewegung.onclick = async function () {
     let input_x = Number(prompt("move X (0-100)"));
 
     input_x = max(0, min(input_x, X_MAX));
@@ -297,8 +309,23 @@ btn_bewegung.onclick = async function() {
 
     await move_to(input_x, input_y);
 
-    
+
 }
+
+btn_start.onclick = async function () {
+    console.log(4545345)
+    await drilling();
+}
+
+btn_pause.onclick = async function () {
+    is_paused = true;
+}
+
+btn_stop.onclick = async function () {
+    is_stopped = true;
+    is_paused = false;
+}
+
 function update_coords() {
     coord_display_1.innerText = x_coord + " " + y_coord + " " + z_coord;
     coord_display_2.innerText = x_coord + " " + y_coord + " " + z_coord;
@@ -360,20 +387,20 @@ async function move_z(steps, delay) {
     for (let i = 0; i < steps; i++) {
         z_coord++;
         setFrame(z_coord / 60, mixer_z, 1);
-        
+
         // console.log(y_coord / 60);
-        
+
         await sleep(delay);
-        
+
         update_coords();
     }
-    
+
     for (let i = 0; i > steps; i--) {
         z_coord--;
         setFrame(z_coord / 60, mixer_z, 1);
-        
+
         await sleep(delay);
-        
+
         update_coords();
     }
     is_moving = false;
@@ -398,18 +425,27 @@ async function move_to(x, y) {
 
         let e2 = 2 * err;
 
-        if (e2 > -dy)  {
+        if (e2 > -dy) {
             err -= dy;
             // x_coord += sx;
             await move_x(sx, 10);
             console.log("move_x: ", sx);
         }
-        
+
         if (e2 < dx) {
             err += dx
             // y_coord += sy
             await move_y(sy, 10);
             console.log("move_y: ", sy);
+        }
+
+        while (is_paused) {
+            await sleep(10);
+        }
+
+        if (autoMode && is_stopped) {
+            is_moving = false;
+            return;
         }
     }
 
@@ -419,16 +455,35 @@ async function move_to(x, y) {
 async function drilling() {
     action_bohrer.paused = false;
 
-    for(let z=0; z < Z_MAX; z+=10) {
+    if (is_paused) {
+        is_paused = false;
+        return;
+    }
+
+    is_stopped = false;
+
+    await move_to(0, 0);
+    await move_z(-z_coord, 25);
+
+    for (let z = 0; z < Z_MAX; z += 10) {
         update_layer();
-        for(let y=0; y < Y_MAX; y+=10) {
-            if ((y/10)%2 == 0) {
+        for (let y = 0; y < Y_MAX; y += 10) {
+            if ((y / 10) % 2 == 0) {
                 await move_to(0, y);
                 await move_to(X_MAX, y);
             } else {
                 await move_to(X_MAX, y);
-                await move_to(0, y);            
+                await move_to(0, y);
             }
+
+            while (is_paused) {
+                await sleep(10);
+            }
+
+            if (is_stopped) {
+                return;
+            }
+
         }
         await move_to(0, 0);
         await move_z(z - z_coord, 25)
@@ -436,8 +491,47 @@ async function drilling() {
 }
 animate();
 
+const area_manual = document.getElementById("manualMode");
+const area_auto = document.getElementById("autoMode");
+
+btn_toManu.onclick = () => {
+    autoMode = false;
+
+    is_paused = false;
+    is_stopped = false;
+}
+btn_toAuto.onclick = () => {
+    autoMode = true;
+
+    is_paused = false;
+    is_stopped = true;
+}
+
+function updateDisabled() {
+    btnX_minus.disabled = is_moving;
+    btnX_plus.disabled = is_moving;
+    btnY_minus.disabled = is_moving;
+    btnY_plus.disabled = is_moving;
+    btnZ_minus.disabled = is_moving;
+    btnZ_plus.disabled = is_moving;
+
+    btn_bewegung.disabled = is_moving;
+    btn_heimat.disabled = is_moving;
+
+    area_manual.style.display = autoMode ? "none" : "block";
+    area_auto.style.display = autoMode ? "flex" : "none";
+
+    btn_toManu.disabled = autoMode && (is_moving || is_paused);
+
+    btn_stop.disabled = !(is_moving || is_paused);
+    btn_pause.disabled = is_paused || is_stopped;
+    btn_start.disabled = is_moving && !is_paused;
+
+    btn_bohrer.className = bohrer_active ? "rotate button" : "button";
+
+    requestAnimationFrame(updateDisabled);
+}
+
 async function start() {
-    // await move_to(X_MAX, Y_MAX);
-    await drilling();
-    // await move_to(0, 0);
+    updateDisabled()
 }
