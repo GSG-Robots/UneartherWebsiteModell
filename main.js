@@ -6,6 +6,9 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.158/examples
 const canvas = document.getElementById("canvas");
 const container = document.getElementById("main");
 
+const btnZ_plus = document.getElementById("moveZpos");
+const btnZ_minus = document.getElementById("moveZneg");
+
 const btnY_plus = document.getElementById("moveYpos");
 const btnY_minus = document.getElementById("moveYneg");
 
@@ -19,12 +22,14 @@ const btn_bewegung = document.getElementById("movePosition");
 const coord_display_1 = document.getElementById("coords");
 const coord_display_2 = document.getElementById("coords2");
 
-const X_MAX = 100;
-const Y_MAX = 100;
-const Z_MAX = 100;
+const layer_display = document.getElementById("layer");
+
+const X_MAX = 179;
+const Y_MAX = 179;
+const Z_MAX = 179;
 
 // Modellname
-let model_name = "unearther.glb";
+let model_name = "UneartherModell2.glb";
 
 // Szene
 const scene = new THREE.Scene();
@@ -52,16 +57,19 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Animation
+let mixer_z;
 let mixer_y;
 let mixer_x;
 let mixer_bohrer;
 
+let duration_z = 0;
 let duration_y = 0;
 let duration_x = 0;
 
 let currentTime_y = 0;
 let currentTime_x = 0;
 
+let action_z;
 let action_y;
 let action_x;
 let action_bohrer;
@@ -118,11 +126,24 @@ loader.load(model_name, (gltf) => {
     scene.add(model);
 
     if (gltf.animations.length > 0) {
+        mixer_z = new THREE.AnimationMixer(model);
 
-        console.log(gltf.animations[2]);
+        const clip_z = gltf.animations[0]; // erstmal nur eine Animation
+        action_z = mixer_z.clipAction(clip_z);
+
+        action_z.play();
+        action_z.paused = false;
+
+        duration_z = clip_z.duration;
+
+        console.log("Animation geladen:", clip_z.name);
+
+        // TEST: direkt Frame setzen
+        setFrame(0, mixer_y); // → sollte Pose ändern
+
         mixer_y = new THREE.AnimationMixer(model);
 
-        const clip_y = gltf.animations[0]; // erstmal nur eine Animation
+        const clip_y = gltf.animations[1]; // erstmal nur eine Animation
         action_y = mixer_y.clipAction(clip_y);
 
         action_y.play();
@@ -137,7 +158,7 @@ loader.load(model_name, (gltf) => {
 
         mixer_x = new THREE.AnimationMixer(model);
 
-        const clip_x = gltf.animations[1]; // erstmal nur eine Animation
+        const clip_x = gltf.animations[2]; // erstmal nur eine Animation
         action_x = mixer_x.clipAction(clip_x);
 
         action_x.play();
@@ -152,12 +173,15 @@ loader.load(model_name, (gltf) => {
 
         mixer_bohrer = new THREE.AnimationMixer(model);
 
-        const clip_bohrer = gltf.animations[2];
+        const clip_bohrer = gltf.animations[3];
         action_bohrer = mixer_bohrer.clipAction(clip_bohrer);
 
         action_bohrer.play();
         action_bohrer.paused = true;
         action_bohrer.setLoop(THREE.LoopRepeat);
+
+
+        console.log(duration_x, duration_y, duration_z);
     }
 
     start();
@@ -188,6 +212,21 @@ function animate() {
 }
 
 // Buttons
+
+btnZ_plus.onclick = async function() {
+    if (!mixer_z || is_moving) return;
+
+    console.log(min(z_coord + 10, Z_MAX));
+
+    await move_z(min(z_coord + 10, Z_MAX) - z_coord, 25);
+};
+
+btnZ_minus.onclick = async function() {
+    if (!mixer_z || is_moving) return;
+
+    await move_z(max(z_coord - 10, 0) - z_coord, 25);
+};
+
 btnY_plus.onclick = async function() {
     if (!mixer_y || is_moving) return;
 
@@ -266,6 +305,11 @@ function update_coords() {
 
 }
 
+function update_layer() {
+    layer_display.innerText = "Layer: " + z_coord / 10;
+
+}
+
 async function move_x(steps, delay) {
     for (let i = 0; i < steps; i++) {
         x_coord++;
@@ -310,6 +354,31 @@ async function move_y(steps, delay) {
     }
 }
 
+async function move_z(steps, delay) {
+    while (is_moving);
+    is_moving = true;
+    for (let i = 0; i < steps; i++) {
+        z_coord++;
+        setFrame(z_coord / 60, mixer_z, 1);
+        
+        // console.log(y_coord / 60);
+        
+        await sleep(delay);
+        
+        update_coords();
+    }
+    
+    for (let i = 0; i > steps; i--) {
+        z_coord--;
+        setFrame(z_coord / 60, mixer_z, 1);
+        
+        await sleep(delay);
+        
+        update_coords();
+    }
+    is_moving = false;
+}
+
 async function move_to(x, y) {
     while (is_moving);
     is_moving = true;
@@ -332,14 +401,14 @@ async function move_to(x, y) {
         if (e2 > -dy)  {
             err -= dy;
             // x_coord += sx;
-            await move_x(sx, 25);
+            await move_x(sx, 10);
             console.log("move_x: ", sx);
         }
         
         if (e2 < dx) {
             err += dx
             // y_coord += sy
-            await move_y(sy, 25);
+            await move_y(sy, 10);
             console.log("move_y: ", sy);
         }
     }
@@ -347,9 +416,28 @@ async function move_to(x, y) {
     is_moving = false;
 }
 
+async function drilling() {
+    action_bohrer.paused = false;
+
+    for(let z=0; z < Z_MAX; z+=10) {
+        update_layer();
+        for(let y=0; y < Y_MAX; y+=10) {
+            if ((y/10)%2 == 0) {
+                await move_to(0, y);
+                await move_to(X_MAX, y);
+            } else {
+                await move_to(X_MAX, y);
+                await move_to(0, y);            
+            }
+        }
+        await move_to(0, 0);
+        await move_z(z - z_coord, 25)
+    }
+}
 animate();
 
 async function start() {
-    await move_to(90, 20);
+    // await move_to(X_MAX, Y_MAX);
+    await drilling();
     // await move_to(0, 0);
 }
