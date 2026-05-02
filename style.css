@@ -280,6 +280,7 @@ header {
 
         &.expanded {
             translate: 0;
+            padding-top: 10px;
         }
     }
 
@@ -302,4 +303,8 @@ header {
     #main-content {
         border-top-left-radius: 0;
     }
+}
+
+.hidden {
+    visibility: hidden;
 }
