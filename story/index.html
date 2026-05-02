@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unearther</title>
+    <link rel="icon" href="/favicon.png" />
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div id="content">
+        <nav>
+            <a class="menu-item" href="/home">
+                <img src="/icons/home.svg" /> <span>Dashboard</span>
+            </a>
+            <a class="menu-item" href="/">
+                <img src="/icons/video.svg" /> <span>Live</span>
+            </a>
+            <a class="menu-item" href="/history">
+                <img src="/icons/layers.svg" /> <span>Verlauf</span>
+            </a>
+            <a class="menu-item" href="https://github.com/GSG-Robots">
+                <img src="/icons/github.svg" /> <span>GitHub</span>
+            </a>
+            <a class="menu-item" href="/downloads">
+                <img src="/icons/upload.svg" /> <span>Downloads</span>
+            </a>
+            <a class="menu-item selected" href="/story">
+                <img src="/icons/file-text.svg" /> <span>Story</span>
+            </a>
+        </nav>
+        <div id="page" role="presentation">
+            <header>
+                <button id="menu-button" class="menu-item">
+                    <img src="/icons/menu.svg" />
+                    <span>Einklappen</span>
+                </button>
+                <h1>Unearther</h1>
+            </header>
+            <div id="main-content" role="presentation">
+                <main>
+                    <h2>Before the season</h2>
+                    <p>
+                        Before the season even started we could search for experts using the season teaser. We created a sheet
+                        with all different experts (mostly archaeologists), so when the season started we only needed to contact the right ones. 
+                    </p>
+                    <h2>Idea finding</h2>
+                    <p>
+                        We manged to talk to a lot of archaeologists and we even went to an excavation in Landau. There were many
+                        good ideas, but finally we decided to built an autonomous excavation robot that helps archaeologist dig out 
+                        artifacts.
+                    </p>
+                    <h2>More experts</h2>
+                    <p>
+                        To build the Unearther we asked mechanists, ai-experts and more archaeologists for help. They told us 
+                        about houses that were fully 3D-printed and ai's perfectly suited for deteckting objeckts.
+                    </p>
+                    <h2>The Building process</h2>
+                    <p>
+                        Before we started building, we made a plan and bought the needed parts. In this time we also started to
+                        design the parts we need to 3D-print. In the christmas we could finally meet to assemble the Unearther.
+                    </p>
+                    <h2>The Code</h2>
+                    <p>
+                        After we succesfully built our robot we needed to programm it. There were all kinds of problems with
+                        the ai and the communication between the RasberryPi and the Esp32. But we managed to deal with quite,
+                        just the ai still caused us headaches. In this time we also began building a full webapp.
+                    </p>
+                    <h2>The Problems</h2>
+                    <p>
+                        A big propblem was our drill head. Originally we wanted to make a 3D-printed gearbox, but the motor
+                        we used was to fast and destroyed it. So our only option was to use a Spike Prime as motor. Another problem
+                        was the Z-Axis. We originally only used two motors for it, and connected all worm gears with belt drives.
+                        It was not easy to get all edges aligned and the belt drives just at the right tension.
+                    </p>
+                    <h2>After national qualifiers</h2>
+                    <p>
+                        To fix our drill head, we purchased a new motor with a built in resistance sensor to check if we hit artifact.
+                        Additionally we switched our stepper-driver and could now control four motors for the Z-Axis.
+                    </p>
+                </main>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

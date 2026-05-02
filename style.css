@@ -151,43 +151,7 @@ img[src^="/icons"] {
 }
 
 
-main {
-    height: 100%;
 
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-}
-
-#main {
-    width: 60%;
-    height: 100%;
-    width: auto;
-    aspect-ratio: 1;
-
-    &>* {
-        border-radius: 5px;
-    }
-}
-
-#side {
-    flex: 1 1;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-}
-
-@media (width <=900px) {
-    main {
-        flex-direction: column;
-    }
-
-    #main {
-        width: 100%;
-        height: auto;
-        max-height: 70%;
-    }
-}
 
 #content {
     display: flex;

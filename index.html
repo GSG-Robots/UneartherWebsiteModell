@@ -24,6 +24,12 @@
             <a class="menu-item" href="https://github.com/GSG-Robots">
                 <img src="/icons/github.svg" /> <span>GitHub</span>
             </a>
+            <a class="menu-item" href="/downloads">
+                <img src="/icons/upload.svg" /> <span>Downloads</span>
+            </a>
+            <a class="menu-item" href="/story">
+                <img src="/icons/file-text.svg" /> <span>Story</span>
+            </a>
         </nav>
         <div id="page" role="presentation">
             <header>
@@ -42,7 +48,7 @@
                         <div class="column">
                             <div id="manualMode" only-when="manual mode">
                                 <button class="button" id="switchToAuto">
-                                    Zur automatischen Steuerung wechseln
+                                    Switch to automatic control
                                 </button>
                                 <br>
                                 <br>
@@ -94,7 +100,7 @@
                             <div id="autoMode" only-when="automode">
                                 <button class="button" id="switchToManual"
                                     should-be-disabled="{!globalState.digger.isPaused}">
-                                    Zur manuellen Steuerung wechseln
+                                    Switch to manual control
                                 </button>
 
                                 <span id="layer">
@@ -201,6 +207,44 @@
 
         #drill.rotate img {
             animation-play-state: running;
+        }
+
+        main {
+            height: 100%;
+
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        #main {
+            width: 60%;
+            height: 100%;
+            width: auto;
+            aspect-ratio: 1;
+
+            &>* {
+                border-radius: 5px;
+            }
+        }
+
+        #side {
+            flex: 1 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        @media (width <=900px) {
+            main {
+                flex-direction: column;
+            }
+
+            #main {
+                width: 100%;
+                height: auto;
+                max-height: 70%;
+            }
         }
     </style>
     <script type="importmap">
